@@ -16,6 +16,7 @@ public:
   BitcoinExchange &operator=(const BitcoinExchange &src);
 
   void csvHandler();
+  void executeInput(const std::string &filename);
 };
 
 #endif // !BITCOIN_EXCHANGE_HPP

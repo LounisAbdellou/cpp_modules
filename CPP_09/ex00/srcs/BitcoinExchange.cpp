@@ -4,7 +4,7 @@
 #include <fstream>
 #include <limits>
 
-static bool isFloatOrInt(const std::string &str) {
+static bool checkRate(const std::string &str) {
   if (str.empty())
     return false;
 
@@ -16,9 +16,14 @@ static bool isFloatOrInt(const std::string &str) {
   return (*ptr) == '\0' || i == str.size();
 }
 
-BitcoinExchange::BitcoinExchange(const std::string &inputFilename) {
+static bool checkDate(const std::string &str) {
+  (void)str;
+  return true;
+}
+
+BitcoinExchange::BitcoinExchange(const std::string &filename) {
   this->csvHandler();
-  (void)inputFilename;
+  this->executeInput(filename);
 }
 
 BitcoinExchange::BitcoinExchange(const BitcoinExchange &src) { *this = src; }
@@ -45,16 +50,30 @@ void BitcoinExchange::csvHandler() {
     return; // MUST THROW EXCEPTION THERE
 
   csv.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
   while (std::getline(csv, line)) {
     pos = line.find(',');
     key = line.substr(0, pos++);
-    value = atof(line.c_str() + pos);
+    line.erase(0, pos);
+    value = atof(line.c_str());
 
-    std::cout << key << " | " << line.c_str() + pos << std::endl;
-
-    if (std::isinf(value) || !isFloatOrInt(line.c_str() + pos))
+    if (std::isinf(value) || !checkDate(key) || !checkRate(line.c_str())) {
+      csv.close();
       return; // MUST THROW EXCEPTION THERE
+    }
 
     this->bitcoinValues[key] = value;
   }
+
+  csv.close();
+}
+
+void BitcoinExchange::executeInput(const std::string &filename) {
+  std::ifstream inputFile;
+
+  inputFile.open(filename.c_str());
+  if (!inputFile.is_open())
+    return; // MUST THROW EXCEPTION THERE
+
+  inputFile.close();
 }
