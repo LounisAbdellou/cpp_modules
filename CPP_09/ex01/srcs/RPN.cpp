@@ -34,8 +34,11 @@ RPN::RPN(const std::string &operation) {
         this->_numbers.top() -= tmp;
       else if (*it == '*')
         this->_numbers.top() *= tmp;
-      else if (*it == '/')
+      else if (*it == '/') {
+        if (tmp < 1)
+          throw std::invalid_argument("invalid operation");
         this->_numbers.top() /= tmp;
+      }
     } else if (*it != ' ') {
       throw std::invalid_argument("invalid argument found");
     }
