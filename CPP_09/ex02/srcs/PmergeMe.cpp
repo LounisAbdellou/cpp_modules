@@ -92,10 +92,10 @@ long PmergeMe::_jacobsthalNumber(long n) {
 }
 
 template <typename T> void PmergeMe::_swapPair(T it, int pair_level) {
-  T start = next(it, -pair_level + 1);
-  T end = next(start, pair_level);
+  T start = it + (-pair_level + 1);
+  T end = start + pair_level;
   while (start != end) {
-    std::iter_swap(start, next(start, pair_level));
+    std::iter_swap(start, start + pair_level);
     start++;
   }
 }
@@ -117,15 +117,15 @@ template <typename t> void PmergeMe::_sortContainer(t &container, int level) {
      where there are numbers (0 in this case) which can't even form a pair.
      Those values should be ignored. */
   Iterator start = container.begin();
-  Iterator last = next(container.begin(), level * (pairUnitsNbr));
-  Iterator end = next(last, -(isOdd * level));
+  Iterator last = container.begin() + (level * pairUnitsNbr);
+  Iterator end = last + -(isOdd * level);
 
   /* Swap pairs of numbers, pairs, pairs of pairs etc by the biggest pair
      number. After each swap we recurse. */
   int jump = 2 * level;
-  for (Iterator it = start; it != end; std::advance(it, jump)) {
-    Iterator thisPair = next(it, level - 1);
-    Iterator nextPair = next(it, level * 2 - 1);
+  for (Iterator it = start; it != end; it += jump) {
+    Iterator thisPair = it + (level - 1);
+    Iterator nextPair = it + (level * 2 - 1);
     if (compare(nextPair, thisPair)) {
       this->_swapPair(thisPair, level);
     }
@@ -143,19 +143,19 @@ template <typename t> void PmergeMe::_sortContainer(t &container, int level) {
   std::vector<Iterator> pend;
 
   /* Initialize the main chain with the {b1, a1}. */
-  main.insert(main.end(), next(container.begin(), level - 1));
-  main.insert(main.end(), next(container.begin(), level * 2 - 1));
+  main.insert(main.end(), container.begin() + (level - 1));
+  main.insert(main.end(), container.begin() + (level * 2 - 1));
 
   /* Insert the rest of a's into the main chain.
      Insert the rest of b's into the pend. */
   for (int i = 4; i <= pairUnitsNbr; i += 2) {
-    pend.insert(pend.end(), next(container.begin(), level * (i - 1) - 1));
-    main.insert(main.end(), next(container.begin(), level * i - 1));
+    pend.insert(pend.end(), container.begin() + (level * (i - 1) - 1));
+    main.insert(main.end(), container.begin() + (level * i - 1));
   }
 
   /* Insert an odd element to the pend, if there are any. */
   if (isOdd) {
-    pend.insert(pend.end(), next(end, level - 1));
+    pend.insert(pend.end(), end + (level - 1));
   }
 
   /* Insert the pend into the main in the order determined by the
@@ -176,9 +176,9 @@ template <typename t> void PmergeMe::_sortContainer(t &container, int level) {
       break;
     int nbrOfTimes = jacobsthalDiff;
     typename std::vector<Iterator>::iterator pendIt =
-        next(pend.begin(), jacobsthalDiff - 1);
+        pend.begin() + (jacobsthalDiff - 1);
     typename std::vector<Iterator>::iterator boundIt =
-        next(main.begin(), currJacobsthal + insertedNumbers);
+        main.begin() + (currJacobsthal + insertedNumbers);
     while (nbrOfTimes) {
       typename std::vector<Iterator>::iterator idx =
           std::upper_bound(main.begin(), boundIt, *pendIt, compare<Iterator>);
@@ -192,7 +192,7 @@ template <typename t> void PmergeMe::_sortContainer(t &container, int level) {
          next pend, and it does more comparisons than it should. We need to
          offset when this happens. */
       offset += (inserted - main.begin()) == currJacobsthal + insertedNumbers;
-      boundIt = next(main.begin(), currJacobsthal + insertedNumbers - offset);
+      boundIt = main.begin() + (currJacobsthal + insertedNumbers - offset);
     }
     prevJacobsthal = currJacobsthal;
     insertedNumbers += jacobsthalDiff;
@@ -206,9 +206,9 @@ template <typename t> void PmergeMe::_sortContainer(t &container, int level) {
      a7 etc. With the way I do it the index of bound is size_of_main -
      size_of_pend + index_of_current_pend. */
   for (ssize_t i = pend.size() - 1; i >= 0; i--) {
-    typename std::vector<Iterator>::iterator currPend = next(pend.begin(), i);
+    typename std::vector<Iterator>::iterator currPend = pend.begin() + i;
     typename std::vector<Iterator>::iterator currBound =
-        next(main.begin(), main.size() - pend.size() + i + isOdd);
+        main.begin() + (main.size() - pend.size() + i + isOdd);
     typename std::vector<Iterator>::iterator idx =
         std::upper_bound(main.begin(), currBound, *currPend, compare<Iterator>);
     main.insert(idx, *currPend);

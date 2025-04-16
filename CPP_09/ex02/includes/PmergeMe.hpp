@@ -33,10 +33,6 @@ private:
   void _printState(const std::string &prefix, t &container) const;
 };
 
-template <typename T> T next(T it, int steps) {
-  std::advance(it, steps);
-  return it;
-}
 template <typename T> bool compare(T lv, T rv) { return *lv < *rv; }
 
 #endif // !PMERGE_ME_HPP
