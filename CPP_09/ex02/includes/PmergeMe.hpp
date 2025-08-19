@@ -20,8 +20,8 @@ private:
   std::deque<int> _deque;
   std::vector<int> _vector;
 
-  long long _getCurrentTimeInMs() const;
   long _jacobsthalNumber(long n);
+  long long _getCurrentTimeInMicro() const;
 
   template <typename t> void _swapPair(t it, int pair_level);
   template <typename t> void _sortContainer(t &container, int level);

@@ -37,11 +37,11 @@ PmergeMe &PmergeMe::operator=(const PmergeMe &src) {
   return *this;
 }
 
-long long PmergeMe::_getCurrentTimeInMs() const {
+long long PmergeMe::_getCurrentTimeInMicro() const {
   struct timeval tv;
   gettimeofday(&tv, NULL);
 
-  return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+  return (tv.tv_sec * 1000000) + tv.tv_usec;
 }
 
 template <typename t>
@@ -64,26 +64,26 @@ void PmergeMe::_printState(const std::string &prefix, t &container) const {
 void PmergeMe::sortVector() {
   std::cout << "Merge Insertion Sort - std::vector\r\n" << std::endl;
   this->_printState("Before: ", this->_vector);
-  long long startTime = this->_getCurrentTimeInMs();
+  long long startTime = this->_getCurrentTimeInMicro();
   this->_sortContainer(this->_vector, 1);
-  long long endTime = this->_getCurrentTimeInMs();
+  long long endTime = this->_getCurrentTimeInMicro();
   this->_printState("After:  ", this->_vector);
 
   std::cout << "Time to process a range of " << this->_vector.size()
-            << " elements with std::vector: " << endTime - startTime
+            << " elements with std::vector: " << (endTime - startTime) / 1000.f
             << " miliseconds" << std::endl;
 }
 
 void PmergeMe::sortDeque() {
   std::cout << "Merge Insertion Sort - std::deque\r\n" << std::endl;
   this->_printState("Before: ", this->_deque);
-  long long startTime = this->_getCurrentTimeInMs();
+  long long startTime = this->_getCurrentTimeInMicro();
   this->_sortContainer(this->_deque, 1);
-  long long endTime = this->_getCurrentTimeInMs();
+  long long endTime = this->_getCurrentTimeInMicro();
   this->_printState("After:  ", this->_deque);
 
   std::cout << "Time to process a range of " << this->_deque.size()
-            << " elements with std::deque => " << endTime - startTime
+            << " elements with std::deque => " << (endTime - startTime) / 1000.f
             << " miliseconds" << std::endl;
 }
 
@@ -109,12 +109,11 @@ template <typename t> void PmergeMe::_sortContainer(t &container, int level) {
     return;
 
   bool isOdd = pairUnitsNbr % 2 == 1;
-
   Iterator start = container.begin();
   Iterator last = container.begin() + (level * pairUnitsNbr);
   Iterator end = last + -(isOdd * level);
-
   int jump = 2 * level;
+
   for (Iterator it = start; it != end; it += jump) {
     Iterator thisPair = it + (level - 1);
     Iterator nextPair = it + (level * 2 - 1);
@@ -163,6 +162,7 @@ template <typename t> void PmergeMe::_sortContainer(t &container, int level) {
           std::upper_bound(main.begin(), boundIt, *pendIt, compare<Iterator>);
       typename std::vector<Iterator>::iterator inserted =
           main.insert(idx, *pendIt);
+
       nbrOfTimes--;
       pendIt = pend.erase(pendIt);
       std::advance(pendIt, -1);
